@@ -23,6 +23,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URLConnection
+import java.util.Hashmap
 
 private const val MESSAGES_CHANNEL = "receive_sharing_intent/messages"
 private const val EVENTS_CHANNEL_MEDIA = "receive_sharing_intent/events-media"
@@ -31,13 +32,13 @@ private const val EVENTS_CHANNEL_TEXT = "receive_sharing_intent/events-text"
 class ReceiveSharingIntentPlugin : FlutterPlugin, ActivityAware, MethodCallHandler,
         EventChannel.StreamHandler, NewIntentListener {
 
-    private var initialMedia: JSONArray? = null
+    private var initalMediaScoped: HashMap<String, JSONArray> = HashMap<String, JSONArray>();
     private var latestMedia: JSONArray? = null
 
     private var initialText: String? = null
     private var latestText: String? = null
 
-    private var eventSinkMedia: EventChannel.EventSink? = null
+    private var eventSinkMediaScoped: HashMap<String, EventChannel.EventSink> = HasMap<String, EventChannel.EventSink>();
     private var eventSinkText: EventChannel.EventSink? = null
 
     private var binding: ActivityPluginBinding? = null
@@ -63,17 +64,11 @@ class ReceiveSharingIntentPlugin : FlutterPlugin, ActivityAware, MethodCallHandl
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-        when (arguments) {
-            "media" -> eventSinkMedia = events
-            "text" -> eventSinkText = events
-        }
+        eventSinkMediaScoped.put(arguments.toString(),events);
     }
 
     override fun onCancel(arguments: Any?) {
-        when (arguments) {
-            "media" -> eventSinkMedia = null
-            "text" -> eventSinkText = null
-        }
+        eventSinkMediaScoped.remove(arguments);
     }
 
     // This static function is optional and equivalent to onAttachedToEngine. It supports the old
@@ -97,10 +92,13 @@ class ReceiveSharingIntentPlugin : FlutterPlugin, ActivityAware, MethodCallHandl
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
-            "getInitialMedia" -> result.success(initialMedia?.toString())
+            "getInitialMedia" -> {
+                val arg = call.argument("identifier");
+                result.success(initialMediaScoped.get(arg).toStrin())
+            }
             "getInitialText" -> result.success(initialText)
             "reset" -> {
-                initialMedia = null
+                initialMediaScoped = HashMap<String, EventChannel.EventSink>();
                 latestMedia = null
                 initialText = null
                 latestText = null
@@ -119,7 +117,8 @@ class ReceiveSharingIntentPlugin : FlutterPlugin, ActivityAware, MethodCallHandl
                 val value = getMediaUris(intent)
                 if (initial) initialMedia = value
                 latestMedia = value
-                eventSinkMedia?.success(latestMedia?.toString())
+                val identifier = intent.component.className;
+                eventSinkMediaScoped.get(identifier)?.success(latestMedia?.toString())
             }
             (intent.type == null || intent.type?.startsWith("text") == true)
                     && intent.action == Intent.ACTION_SEND -> { // Sharing text

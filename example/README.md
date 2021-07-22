@@ -544,7 +544,7 @@ extension Array {
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:receive_multi_sharing_intent/receive_sharing_intent.dart';
 
 void main() => runApp(MyApp());
 

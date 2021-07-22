@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:receive_multi_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
   const MethodChannel channel =

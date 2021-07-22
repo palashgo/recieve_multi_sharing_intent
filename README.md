@@ -572,7 +572,7 @@ extension Array {
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:receive_multi_sharing_intent/receive_sharing_intent.dart';
 
 void main() => runApp(MyApp());
 
@@ -592,7 +592,7 @@ class _MyAppState extends State<MyApp> {
 
     // For sharing images coming from outside the app while the app is in the memory
     _intentDataStreamSubscription =
-        ReceiveSharingIntent.getMediaStream().listen((List<SharedMediaFile> value) {
+        ReceiveSharingIntent.getMediaStream("<FQDN alias>").listen((List<SharedMediaFile> value) {
       setState(() {
         print("Shared:" + (_sharedFiles?.map((f)=> f.path)?.join(",") ?? ""));
         _sharedFiles = value;
@@ -602,7 +602,7 @@ class _MyAppState extends State<MyApp> {
     });
 
     // For sharing images coming from outside the app while the app is closed
-    ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> value) {
+    ReceiveSharingIntent.getInitialMedia("<FQDN alias>").then((List<SharedMediaFile> value) {
       setState(() {
         _sharedFiles = value;
       });

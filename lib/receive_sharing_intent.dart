@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
 class ReceiveSharingIntent {
@@ -21,8 +21,13 @@ class ReceiveSharingIntent {
   ///
   /// NOTE. The returned media on iOS (iOS ONLY) is already copied to a temp folder.
   /// So, you need to delete the file after you finish using it
-  static Future<List<SharedMediaFile>> getInitialMedia() async {
-    final json = await _mChannel.invokeMethod('getInitialMedia');
+  static Future<List<SharedMediaFile>> getInitialMedia(String? identifer) async {
+    var json = null;
+    if (Platform.isAndroid) {
+      json = await _mChannel.invokeMethod('getInitialMedia',{"identifier":identifer});
+    }
+    else json = await _mChannel.invokeMethod('getInitialMedia');
+    
     if (json == null) return [];
     final encoded = jsonDecode(json);
     return encoded
@@ -65,10 +70,13 @@ class ReceiveSharingIntent {
   ///
   /// If the app was started by a link intent or user activity the stream will
   /// not emit that initial one - query either the `getInitialMedia` instead.
-  static Stream<List<SharedMediaFile>> getMediaStream() {
+  static Stream<List<SharedMediaFile>> getMediaStream(String? identifier) {
     if (_streamMedia == null) {
-      final stream =
-      _eChannelMedia.receiveBroadcastStream("media").cast<String?>();
+      var stream = null;
+      if(Platform.isAndroid){
+        stream = _eChannelMedia.receiveBroadcastStream(identifier).cast<String?>();
+      }
+      else stream = _eChannelMedia.receiveBroadcastStream().cast<String?>();
       _streamMedia = stream.transform<List<SharedMediaFile>>(
         new StreamTransformer<String?, List<SharedMediaFile>>.fromHandlers(
           handleData: (String? data, EventSink<List<SharedMediaFile>> sink) {
